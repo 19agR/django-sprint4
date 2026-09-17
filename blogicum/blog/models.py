@@ -2,6 +2,7 @@
 
 from django.conf import settings
 from django.db import models
+from django.urls import reverse
 
 from .constants import DISPLAY_TEXT_LENGTH, TITLE_MAX_LENGTH
 from .querysets import PostQuerySet
@@ -126,6 +127,10 @@ class Post(PublishedModel):
         """Возвращает сокращённый заголовок публикации."""
         return self.title[:DISPLAY_TEXT_LENGTH]
 
+    def get_absolute_url(self) -> str:
+        """Возвращает адрес страницы просмотра публикации."""
+        return reverse('blog:post_detail', kwargs={'post_id': self.pk})
+
 
 class Comment(models.Model):
     """Хранит комментарий пользователя к отдельной публикации."""
@@ -138,23 +143,25 @@ class Comment(models.Model):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comments',
         verbose_name='Публикация',
     )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='comments',
         verbose_name='Автор комментария',
     )
 
     class Meta:
-        """Задаёт названия и порядок комментариев от старых к новым."""
+        """Задаёт названия, обратные связи и порядок комментариев."""
 
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
+        default_related_name = 'comments'
         ordering = ('created_at', 'pk')
 
     def __str__(self) -> str:
-        """Возвращает начало текста комментария."""
-        return self.text[:DISPLAY_TEXT_LENGTH]
+        """Возвращает автора, публикацию и начало текста комментария."""
+        return (
+            f'Комментарий автора {self.author} к публикации «{self.post}»: '
+            f'{self.text[:DISPLAY_TEXT_LENGTH]}'
+        )

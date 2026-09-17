@@ -8,7 +8,11 @@ from .constants import POSTS_PER_PAGE
 from .models import Post
 
 
-def paginate_posts(request: HttpRequest, posts: QuerySet[Post]) -> Page:
+def paginate_posts(
+    request: HttpRequest,
+    posts: QuerySet[Post],
+    per_page: int = POSTS_PER_PAGE,
+) -> Page:
     """Возвращает страницу публикаций по параметру запроса page."""
-    paginator = Paginator(posts, POSTS_PER_PAGE)
+    paginator = Paginator(posts, per_page)
     return paginator.get_page(request.GET.get('page'))

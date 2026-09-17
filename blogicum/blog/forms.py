@@ -3,7 +3,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 
-from .constants import PUBLICATION_DATETIME_FORMAT
+from .constants import COMMENT_TEXTAREA_ROWS, PUBLICATION_DATETIME_FORMAT
 from .models import Comment, Post
 
 
@@ -11,10 +11,10 @@ class PostForm(forms.ModelForm):
     """Позволяет автору заполнить содержимое публикации."""
 
     class Meta:
-        """Перечисляет доступные автору поля и виджет даты."""
+        """Исключает выбор автора и задаёт виджет даты публикации."""
 
         model = Post
-        fields = ('title', 'text', 'pub_date', 'location', 'category', 'image')
+        exclude = ('author',)
         widgets = {
             'pub_date': forms.DateTimeInput(
                 format=PUBLICATION_DATETIME_FORMAT,
@@ -31,6 +31,9 @@ class CommentForm(forms.ModelForm):
 
         model = Comment
         fields = ('text',)
+        widgets = {
+            'text': forms.Textarea(attrs={'rows': COMMENT_TEXTAREA_ROWS}),
+        }
 
 
 class ProfileForm(forms.ModelForm):

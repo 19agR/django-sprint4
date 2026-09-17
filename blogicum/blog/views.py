@@ -50,10 +50,10 @@ def profile(request: HttpRequest, username: str) -> HttpResponse:
 def edit_profile(request: HttpRequest) -> HttpResponse:
     """Редактирует профиль только текущего пользователя."""
     form = ProfileForm(
-        request.POST if request.method == 'POST' else None,
+        request.POST or None,
         instance=request.user,
     )
-    if request.method == 'POST' and form.is_valid():
+    if form.is_valid():
         user = form.save()
         return redirect('blog:profile', username=user.username)
     return render(request, 'blog/user.html', {'form': form})
@@ -77,10 +77,10 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
 def create_post(request: HttpRequest) -> HttpResponse:
     """Создаёт публикацию от имени текущего пользователя."""
     form = PostForm(
-        request.POST if request.method == 'POST' else None,
-        request.FILES if request.method == 'POST' else None,
+        request.POST or None,
+        request.FILES or None,
     )
-    if request.method == 'POST' and form.is_valid():
+    if form.is_valid():
         post = form.save(commit=False)
         post.author = request.user
         post.save()
@@ -95,11 +95,11 @@ def edit_post(request: HttpRequest, post_id: int) -> HttpResponse:
     if post.author_id != request.user.pk:
         return redirect('blog:post_detail', post_id=post_id)
     form = PostForm(
-        request.POST if request.method == 'POST' else None,
-        request.FILES if request.method == 'POST' else None,
+        request.POST or None,
+        request.FILES or None,
         instance=post,
     )
-    if request.method == 'POST' and form.is_valid():
+    if form.is_valid():
         form.save()
         return redirect('blog:post_detail', post_id=post_id)
     return render(request, 'blog/create.html', {'form': form})
@@ -134,12 +134,7 @@ def add_comment(request: HttpRequest, post_id: int) -> HttpResponse:
         comment.post = post
         comment.author = request.user
         comment.save()
-        return redirect('blog:post_detail', post_id=post_id)
-    return render(request, 'blog/detail.html', {
-        'post': post,
-        'form': form,
-        'comments': post.comments.select_related('author'),
-    })
+    return redirect('blog:post_detail', post_id=post_id)
 
 
 @login_required
@@ -157,10 +152,10 @@ def edit_comment(
         author=request.user,
     )
     form = CommentForm(
-        request.POST if request.method == 'POST' else None,
+        request.POST or None,
         instance=comment,
     )
-    if request.method == 'POST' and form.is_valid():
+    if form.is_valid():
         form.save()
         return redirect('blog:post_detail', post_id=post_id)
     return render(request, 'blog/comment.html', {
